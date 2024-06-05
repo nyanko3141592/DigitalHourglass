@@ -12,13 +12,21 @@ struct SandClockView: View {
     // 1 : あり
     // 2 : なし
     // 0 : 枠ナシ
-    var matrix1: [[Int]] = createZeroMatrix(size: 10, fillInt: 1)
-    var matrix2: [[Int]] = createZeroMatrix(size: 10, fillInt: 2)
+    @State var matrix1: [[Int]] = createZeroMatrix(size: 10, fillInt: 1)
+    @State var matrix2: [[Int]] = createZeroMatrix(size: 10, fillInt: 2)
 
 
     var body: some View {
         VStack {
+            Spacer()
             MatrixView(matrix: combineMatrices(matrix1, matrix2))
+            Spacer()
+            Button(action: {
+                matrix1 = nextMatrix(matrix: matrix1)
+                matrix2 = nextMatrix(matrix: matrix2)
+            }) {
+                Text("Next")
+            }
         }
     }
 }
@@ -74,14 +82,6 @@ struct MatrixView: View {
         }
         .padding(0) // 余白を0に設定
         .rotationEffect(.degrees(45))
-    }
-}
-
-struct ContentView: View {
-    var body: some View {
-        VStack {
-            // ここに他のコンテンツを追加できます
-        }
     }
 }
 
