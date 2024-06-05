@@ -36,65 +36,97 @@ struct SandClockView: View {
     // 1 : あり
     // 2 : なし
     // 0 : 枠ナシ
-    @State var matrix: [[Int]] = combineMatrices(createZeroMatrix(size: 10, fillInt: 1), createZeroMatrix(size: 10, fillInt: 2))
+    @State var matrix: [[Int]] = combineMatrices(createZeroMatrix(size: 15, fillInt: 1), createZeroMatrix(size: 15, fillInt: 2))
     @State var timer: Timer?
     @State var direction: Direction = .down
+    @State var isButtonDisabled = true
+    @State var inclinationSensorIsActive = false
+
+    // 画面サイズ
+    let screenSize = UIScreen.main.bounds.size
 
     var body: some View {
-        VStack {
-            Spacer()
-            MatrixView(matrix:matrix)
-            Spacer()
-            HStack{
-                Button(action: {
-                    // calc next matrix
-                    direction = .upLeft
-                }) {
-                    Text("↖️")
-                }
-                Button(action: {
-                    // calc next matrix
-                    direction = .up
-                }) {
-                    Text("⬆️")
-                }
-                Button(action: {
-                    direction = .upRight
-                                }) {
-                    Text("↗️")
-                }
+        let matrixSize: CGFloat = {
+            let width = screenSize.width / CGFloat(matrix.count / 2) / 1.5
+            let height = screenSize.height / CGFloat(matrix.count) / 1.5
+            return width > height ? width : height
+        }()
+        ZStack{
+            VStack {
+                Spacer()
+                MatrixView(matrix:matrix, sandSize: matrixSize)
+                Spacer()
             }
-            HStack{
-                Button(action: {
-                    // calc next matrix
-                    direction = .left
-                }) {
-                    Text("⬅️")
-                }
-                Button(action: {
-                    // calc next matrix
-                    direction = .right}
-                ){
-                    Text("➡️")
-                }
+            Button(action: {
+                isButtonDisabled.toggle()
+            }) {
+                // rectange
+                Rectangle()
+                    .frame(width: screenSize.width, height: screenSize.height)
+                    .foregroundColor(.clear)
             }
-            HStack{
-                Button(action: {
-                    // calc next matrix
-                    direction = .downLeft
-                }) {
-                    Text("↙️")
-                }
-                Button(action: {
-                    direction = .down
-                }) {
-                    Text("⬇️")
-                }
-                Button(action: {
-                    // calc next matrix
-                    direction = .downRight
-                }) {
-                    Text("↘️")
+            if isButtonDisabled{
+
+            }else{
+                VStack{
+                    HStack{
+                        Button(action: {
+                            // calc next matrix
+                            direction = .upLeft
+                        }) {
+                            Text("↖️")
+                        }
+                        Button(action: {
+                            // calc next matrix
+                            direction = .up
+                        }) {
+                            Text("⬆️")
+                        }
+                        Button(action: {
+                            direction = .upRight
+                        }) {
+                            Text("↗️")
+                        }
+                    }
+                    HStack{
+                        Button(action: {
+                            // calc next matrix
+                            direction = .left
+                        }) {
+                            Text("⬅️")
+                        }
+                        Button(action: {
+                            // calc next matrix
+                            inclinationSensorIsActive.toggle()
+                        }) {
+                            Text(inclinationSensorIsActive ? "▶️" : "🔴")
+                        }
+                        Button(action: {
+                            // calc next matrix
+                            direction = .right}
+                        ){
+                            Text("➡️")
+                        }
+                    }
+                    HStack{
+                        Button(action: {
+                            // calc next matrix
+                            direction = .downLeft
+                        }) {
+                            Text("↙️")
+                        }
+                        Button(action: {
+                            direction = .down
+                        }) {
+                            Text("⬇️")
+                        }
+                        Button(action: {
+                            // calc next matrix
+                            direction = .downRight
+                        }) {
+                            Text("↘️")
+                        }
+                    }
                 }
             }
         }
@@ -251,7 +283,7 @@ func nextMatrix(matrix: [[Int]], nextMove: (Int, Int)) -> [[Int]] {
 
 struct MatrixView: View {
     let matrix: [[Int]]
-    let sandSize: CGFloat = 20
+    let sandSize: CGFloat
 
     var body: some View {
         VStack(spacing: 0) {
