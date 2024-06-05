@@ -7,11 +7,38 @@
 
 import SwiftUI
 
+enum Direction {
+    case upLeft, up, upRight, left, right, downLeft, down, downRight
+
+    var move: (Int, Int) {
+        switch self {
+        case .upLeft:
+            return (0, -1)
+        case .up:
+            return (-1, -1)
+        case .upRight:
+            return (-1, 0)
+        case .left:
+            return (1, -1)
+        case .right:
+            return (-1, 1)
+        case .downLeft:
+            return (1, 0)
+        case .down:
+            return (1, 1)
+        case .downRight:
+            return (0, 1)
+        }
+    }
+}
+
 struct SandClockView: View {
     // 1 : あり
     // 2 : なし
     // 0 : 枠ナシ
     @State var matrix: [[Int]] = combineMatrices(createZeroMatrix(size: 10, fillInt: 1), createZeroMatrix(size: 10, fillInt: 2))
+    @State var timer: Timer?
+    @State var direction: Direction = .down
 
     var body: some View {
         VStack {
@@ -21,61 +48,76 @@ struct SandClockView: View {
             HStack{
                 Button(action: {
                     // calc next matrix
-                    matrix = nextMatrix(matrix: matrix, nextMove: (0, -1))
+                    direction = .upLeft
                 }) {
                     Text("↖️")
                 }
                 Button(action: {
                     // calc next matrix
-                    matrix = nextMatrix(matrix: matrix, nextMove: (-1, -1))
+                    direction = .up
                 }) {
                     Text("⬆️")
-                } 
+                }
                 Button(action: {
-                    // calc next matrix
-                    matrix = nextMatrix(matrix: matrix, nextMove: (-1, 0))
-                }) {
+                    direction = .upRight
+                                }) {
                     Text("↗️")
                 }
             }
             HStack{
                 Button(action: {
                     // calc next matrix
-                    matrix = nextMatrix(matrix: matrix, nextMove: (1, -1))
+                    direction = .left
                 }) {
                     Text("⬅️")
                 }
                 Button(action: {
                     // calc next matrix
-                    matrix = nextMatrix(matrix: matrix, nextMove: (-1, 1))
-                }) {
+                    direction = .right}
+                ){
                     Text("➡️")
                 }
             }
             HStack{
                 Button(action: {
                     // calc next matrix
-                    matrix = nextMatrix(matrix: matrix, nextMove: (1, 0))
+                    direction = .downLeft
                 }) {
                     Text("↙️")
                 }
                 Button(action: {
-                    // calc next matrix
-                    matrix = nextMatrix(matrix: matrix, nextMove: (1, 1))
+                    direction = .down
                 }) {
                     Text("⬇️")
                 }
                 Button(action: {
                     // calc next matrix
-                    matrix = nextMatrix(matrix: matrix, nextMove: (0, 1))
+                    direction = .downRight
                 }) {
                     Text("↘️")
                 }
             }
         }
+        .onDisappear {
+            stopTimer()
+        }
+        .onAppear() {
+            startTimer()
+        }
+    }
+
+    func startTimer() {
+        stopTimer() // Stop any existing timer
+        timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { _ in
+            matrix = nextMatrix(matrix: matrix, nextMove: direction.move)
+        }
+    }
+
+    func stopTimer() {
+        timer?.invalidate()
+        timer = nil
     }
 }
-
 
 // 指定されたサイズの0で埋められた正方行列を生成する関数
 func createZeroMatrix(size: Int, fillInt: Int = 0) -> [[Int]] {
@@ -216,7 +258,7 @@ struct MatrixView: View {
             ForEach(0..<matrix.count, id: \.self) { row in
                 HStack(spacing: 0) {
                     ForEach(0..<matrix[row].count, id: \.self) { column in
-                        Text("\(matrix[row][column])")
+                        Text("")
                             .frame(width: sandSize, height: sandSize)
                             .border(matrix[row][column] != 0 ? Color.black : Color.clear, width: 1)
                             .background(matrix[row][column] != 1 ? Color.clear : Color.yellow)
