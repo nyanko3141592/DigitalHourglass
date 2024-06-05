@@ -11,18 +11,66 @@ struct SandClockView: View {
     // 1 : あり
     // 2 : なし
     // 0 : 枠ナシ
-    @State var matrix: [[Int]] = combineMatrices(createZeroMatrix(size: 5, fillInt: 1), createZeroMatrix(size: 5, fillInt: 2))
+    @State var matrix: [[Int]] = combineMatrices(createZeroMatrix(size: 10, fillInt: 1), createZeroMatrix(size: 10, fillInt: 2))
 
     var body: some View {
         VStack {
             Spacer()
             MatrixView(matrix:matrix)
             Spacer()
-            Button(action: {
-                // calc next matrix
-                matrix = nextMatrix(matrix: matrix, nextMove: (1, 1))
-            }) {
-                Text("Next")
+            HStack{
+                Button(action: {
+                    // calc next matrix
+                    matrix = nextMatrix(matrix: matrix, nextMove: (0, -1))
+                }) {
+                    Text("↖️")
+                }
+                Button(action: {
+                    // calc next matrix
+                    matrix = nextMatrix(matrix: matrix, nextMove: (-1, -1))
+                }) {
+                    Text("⬆️")
+                } 
+                Button(action: {
+                    // calc next matrix
+                    matrix = nextMatrix(matrix: matrix, nextMove: (-1, 0))
+                }) {
+                    Text("↗️")
+                }
+            }
+            HStack{
+                Button(action: {
+                    // calc next matrix
+                    matrix = nextMatrix(matrix: matrix, nextMove: (1, -1))
+                }) {
+                    Text("⬅️")
+                }
+                Button(action: {
+                    // calc next matrix
+                    matrix = nextMatrix(matrix: matrix, nextMove: (-1, 1))
+                }) {
+                    Text("➡️")
+                }
+            }
+            HStack{
+                Button(action: {
+                    // calc next matrix
+                    matrix = nextMatrix(matrix: matrix, nextMove: (1, 0))
+                }) {
+                    Text("↙️")
+                }
+                Button(action: {
+                    // calc next matrix
+                    matrix = nextMatrix(matrix: matrix, nextMove: (1, 1))
+                }) {
+                    Text("⬇️")
+                }
+                Button(action: {
+                    // calc next matrix
+                    matrix = nextMatrix(matrix: matrix, nextMove: (0, 1))
+                }) {
+                    Text("↘️")
+                }
             }
         }
     }
