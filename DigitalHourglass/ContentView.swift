@@ -6,9 +6,10 @@
 //
 
 import SwiftUI
+import CoreMotion
 
 enum Direction {
-    case upLeft, up, upRight, left, right, downLeft, down, downRight
+    case upLeft, up, upRight, left, right, downLeft, down, downRight, stop
 
     var move: (Int, Int) {
         switch self {
@@ -28,6 +29,8 @@ enum Direction {
             return (1, 1)
         case .downRight:
             return (0, 1)
+        case .stop:
+            return (0, 0)
         }
     }
 }
@@ -40,7 +43,8 @@ struct SandClockView: View {
     @State var timer: Timer?
     @State var direction: Direction = .down
     @State var isButtonDisabled = true
-    @State var inclinationSensorIsActive = false
+    @State var inclinationSensorIsActive = true
+    @State private var motionManager = CMMotionManager()
 
     // 画面サイズ
     let screenSize = UIScreen.main.bounds.size
@@ -68,73 +72,16 @@ struct SandClockView: View {
             if isButtonDisabled{
 
             }else{
-                VStack{
-                    HStack{
-                        Button(action: {
-                            // calc next matrix
-                            direction = .upLeft
-                        }) {
-                            Text("↖️")
-                        }
-                        Button(action: {
-                            // calc next matrix
-                            direction = .up
-                        }) {
-                            Text("⬆️")
-                        }
-                        Button(action: {
-                            direction = .upRight
-                        }) {
-                            Text("↗️")
-                        }
-                    }
-                    HStack{
-                        Button(action: {
-                            // calc next matrix
-                            direction = .left
-                        }) {
-                            Text("⬅️")
-                        }
-                        Button(action: {
-                            // calc next matrix
-                            inclinationSensorIsActive.toggle()
-                        }) {
-                            Text(inclinationSensorIsActive ? "▶️" : "🔴")
-                        }
-                        Button(action: {
-                            // calc next matrix
-                            direction = .right}
-                        ){
-                            Text("➡️")
-                        }
-                    }
-                    HStack{
-                        Button(action: {
-                            // calc next matrix
-                            direction = .downLeft
-                        }) {
-                            Text("↙️")
-                        }
-                        Button(action: {
-                            direction = .down
-                        }) {
-                            Text("⬇️")
-                        }
-                        Button(action: {
-                            // calc next matrix
-                            direction = .downRight
-                        }) {
-                            Text("↘️")
-                        }
-                    }
-                }
+                // ここでmatrixのサイズ変更をできるようにする
             }
         }
         .onDisappear {
             stopTimer()
+            motionManager.stopDeviceMotionUpdates()
         }
         .onAppear() {
             startTimer()
+            startMonitoringDeviceMotion()
         }
     }
 
@@ -148,6 +95,48 @@ struct SandClockView: View {
     func stopTimer() {
         timer?.invalidate()
         timer = nil
+    }
+
+    func startMonitoringDeviceMotion() {
+        if motionManager.isDeviceMotionAvailable {
+            motionManager.deviceMotionUpdateInterval = 0.1
+            motionManager.startDeviceMotionUpdates(to: .main) { (motion, error) in
+                guard let motion = motion else { return }
+
+                if inclinationSensorIsActive {
+                    let pitch = motion.attitude.pitch
+                    let roll = motion.attitude.roll
+
+                    // Threshold values for detecting direction
+                    let threshold: Double = 0.2
+                    let stopThreshold: Double = 0.1
+
+                    if abs(pitch) < stopThreshold && abs(roll) < stopThreshold {
+                        direction = .stop
+                    } else if pitch > threshold && roll > threshold {
+                        direction = .downRight
+                    } else if pitch > threshold && roll < -threshold {
+                        direction = .downLeft
+                    } else if pitch < -threshold && roll > threshold {
+                        direction = .upRight
+                    } else if pitch < -threshold && roll < -threshold {
+                        direction = .upLeft
+                    } else if abs(pitch) > abs(roll) {
+                        if pitch > threshold {
+                            direction = .down
+                        } else if pitch < -threshold {
+                            direction = .up
+                        }
+                    } else {
+                        if roll > threshold {
+                            direction = .right
+                        } else if roll < -threshold {
+                            direction = .left
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -187,7 +176,9 @@ func nextMatrix(matrix: [[Int]], nextMove: (Int, Int)) -> [[Int]] {
     var nextMatrix = matrix
     let verticalMove: (Int, Int) = (nextMove.1, -nextMove.0)
 
-    print("nextMove: \(nextMove)")
+    if nextMove == (0,0){
+        return matrix
+    }
 
     var correctPoss: [(Int, Int)] = []
     for row in (0..<size).reversed() {
@@ -235,7 +226,6 @@ func nextMatrix(matrix: [[Int]], nextMove: (Int, Int)) -> [[Int]] {
                 }
                 let a = (nextPosRow[i].0 + verticalMove.0, nextPosRow[i].1 + verticalMove.1)
                 if a == nextPosRow[j]{
-                    print("a: \(a)")
                     for k in 0...size{
                         nextPosRow.append((a.0 + k * verticalMove.0, a.1 + k * verticalMove.1))
                         nextPosRow.append((a.0 - k * verticalMove.0, a.1 - k * verticalMove.1))
@@ -253,7 +243,6 @@ func nextMatrix(matrix: [[Int]], nextMove: (Int, Int)) -> [[Int]] {
             }
         }
         nextPosRow = uniqueArray
-        print("nextPosRow: \(nextPosRow)")
         // 移動
         for (nextRow, nextCol) in nextPosRow {
             if nextRow < 0 || nextRow >= size || nextCol < 0 || nextCol >= size {
@@ -267,13 +256,6 @@ func nextMatrix(matrix: [[Int]], nextMove: (Int, Int)) -> [[Int]] {
                 print("sand move to \(nextRow), \(nextCol) from \(row), \(col)")
                 break
             }
-        }
-    }
-
-    for row in stride(from: size - 1, through: 0, by: -1) {
-        for col in stride(from: size - 1, through: 0, by: -1) {
-
-
         }
     }
 
