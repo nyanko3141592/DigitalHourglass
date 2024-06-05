@@ -12,18 +12,16 @@ struct SandClockView: View {
     // 1 : あり
     // 2 : なし
     // 0 : 枠ナシ
-    @State var matrix1: [[Int]] = createZeroMatrix(size: 10, fillInt: 1)
-    @State var matrix2: [[Int]] = createZeroMatrix(size: 10, fillInt: 2)
-
+    @State var matrix: [[Int]] = combineMatrices(createZeroMatrix(size: 10, fillInt: 1), createZeroMatrix(size: 10, fillInt: 2))
 
     var body: some View {
         VStack {
             Spacer()
-            MatrixView(matrix: combineMatrices(matrix1, matrix2))
+            MatrixView(matrix:matrix)
             Spacer()
             Button(action: {
-                matrix1 = nextMatrix(matrix: matrix1)
-                matrix2 = nextMatrix(matrix: matrix2)
+                // calc next matrix
+                matrix = nextMatrix(matrix: matrix, nextMove: (1, 1))
             }) {
                 Text("Next")
             }
@@ -63,6 +61,35 @@ func combineMatrices(_ matrix1: [[Int]], _ matrix2: [[Int]]) -> [[Int]] {
     return combinedMatrix
 }
 
+func nextMatrix(matrix: [[Int]], nextMove: (Int, Int)) -> [[Int]] {
+    let size = matrix.count
+    var nextMatrix = matrix
+
+    for row in stride(from: size - 1, through: 0, by: -1) {
+        for col in stride(from: size - 1, through: 0, by: -1) {
+            if matrix[row][col] != 1 {
+                continue
+            }
+            // 真下に移動
+            // 次の位置を計算
+            let nextPos = (row + nextMove.0, col + nextMove.1)
+            if nextPos.0 < 0 || nextPos.0 >= size || nextPos.1 < 0 || nextPos.1 >= size {
+                // 次の位置が範囲外かどうかをチェック
+                continue
+            } else if matrix[nextPos.0][nextPos.1] == 2 {
+                // 次の位置が空の場合
+                nextMatrix[row][col] = 2
+                nextMatrix[nextPos.0][nextPos.1] = 1
+                continue
+            }
+
+        }
+    }
+
+    // 下の行が空いていたら移動
+    return nextMatrix
+}
+
 struct MatrixView: View {
     let matrix: [[Int]]
     let sandSize: CGFloat = 20
@@ -72,7 +99,7 @@ struct MatrixView: View {
             ForEach(0..<matrix.count, id: \.self) { row in
                 HStack(spacing: 0) {
                     ForEach(0..<matrix[row].count, id: \.self) { column in
-                        Text("")
+                        Text("\(matrix[row][column])")
                             .frame(width: sandSize, height: sandSize)
                             .border(matrix[row][column] != 0 ? Color.black : Color.clear, width: 1)
                             .background(matrix[row][column] != 1 ? Color.clear : Color.yellow)
