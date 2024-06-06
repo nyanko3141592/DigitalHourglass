@@ -39,13 +39,14 @@ struct SandClockView: View {
     // 1 : あり
     // 2 : なし
     // 0 : 枠ナシ
-    @State var matrix: [[Int]] = combineMatrices(createZeroMatrix(size: 15, fillInt: 1), createZeroMatrix(size: 15, fillInt: 2))
+    @State var matrix: [[Int]] = combineMatrices(createZeroMatrix(size: 10, fillInt: 1), createZeroMatrix(size: 10, fillInt: 2))
     @State var timer: Timer?
     @State var direction: Direction = .down
     @State var isButtonDisabled = true
     @State var inclinationSensorIsActive = true
     @State private var motionManager = CMMotionManager()
-    @State private var matrixSize: Int = 15
+    @State private var matrixSize: Int = 10
+    @State private var timerInterval: Double = 0.1
     @State private var showingSettings = false
 
     // 画面サイズ
@@ -73,38 +74,143 @@ struct SandClockView: View {
                         .foregroundColor(.clear)
                 }
                 .sheet(isPresented: $showingSettings) {
-                    SettingsView(matrixSize: $matrixSize, onMatrixSizeChange: updateMatrix)
+                    SettingsView(matrixSize: $matrixSize, timerInterval: $timerInterval, onMatrixSizeChange: updateMatrix, onTimerIntervalChange: updateTimer)
+                }
+
+            }
+        }
+        .onDisappear {
+            stopTimer()
+            motionManager.stopDeviceMotionUpdates()
+        }
+        .onAppear {
+            startTimer()
+            startMonitoringDeviceMotion()
+        }
+
+    }
+    private func updateMatrix() {
+        matrix = combineMatrices(createZeroMatrix(size: matrixSize, fillInt: 1), createZeroMatrix(size: matrixSize, fillInt: 2))
+    }
+
+    private func updateTimer() {
+        timer?.invalidate()
+        startTimer()
+    }
+
+    func startTimer() {
+        stopTimer()
+        timer = Timer.scheduledTimer(withTimeInterval: timerInterval, repeats: true) { _ in
+            matrix = nextMatrix(matrix: matrix, nextMove: direction.move)
+        }
+    }
+
+    func stopTimer() {
+        timer?.invalidate()
+        timer = nil
+    }
+
+    func startMonitoringDeviceMotion() {
+        if motionManager.isDeviceMotionAvailable {
+            motionManager.deviceMotionUpdateInterval = 0.1
+            motionManager.startDeviceMotionUpdates(to: .main) { (motion, error) in
+                guard let motion = motion else { return }
+
+                if inclinationSensorIsActive {
+                    let pitch = motion.attitude.pitch
+                    let roll = motion.attitude.roll
+
+                    let threshold: Double = 0.2
+                    let stopThreshold: Double = 0.1
+
+                    if abs(pitch) < stopThreshold && abs(roll) < stopThreshold {
+                        direction = .stop
+                    } else if pitch > threshold && roll > threshold {
+                        direction = .downRight
+                    } else if pitch > threshold && roll < -threshold {
+                        direction = .downLeft
+                    } else if pitch < -threshold && roll > threshold {
+                        direction = .upRight
+                    } else if pitch < -threshold && roll < -threshold {
+                        direction = .upLeft
+                    } else if abs(pitch) > abs(roll) {
+                        if pitch > threshold {
+                            direction = .down
+                        } else if pitch < -threshold {
+                            direction = .up
+                        }
+                    } else {
+                        if roll > threshold {
+                            direction = .right
+                        } else if roll < -threshold {
+                            direction = .left
+                        }
+                    }
                 }
             }
         }
     }
 
-    private func updateMatrix() {
-        matrix = combineMatrices(createZeroMatrix(size: matrixSize, fillInt: 1), createZeroMatrix(size: matrixSize, fillInt: 2))
-    }
 }
 
+struct MatrixView: View {
+    let matrix: [[Int]]
+    let sandSize: CGFloat
+
+    var body: some View {
+        VStack(spacing: 0) {
+            ForEach(0..<matrix.count, id: \.self) { row in
+                HStack(spacing: 0) {
+                    ForEach(0..<matrix[row].count, id: \.self) { column in
+                        Text("")
+                            .frame(width: sandSize, height: sandSize)
+                            .border(matrix[row][column] != 0 ? Color.black : Color.clear, width: 1)
+                            .background(matrix[row][column] != 1 ? Color.clear : Color.yellow)
+                    }
+                }
+            }
+        }
+        .padding(0) // 余白を0に設定
+        .rotationEffect(.degrees(45))
+    }
+}
 struct SettingsView: View {
     @Binding var matrixSize: Int
+    @Binding var timerInterval: Double
     let onMatrixSizeChange: () -> Void
+    let onTimerIntervalChange: () -> Void
 
     var body: some View {
         VStack {
+            // 新しいText要素を追加
+            Text("\(String(format: "%.1f", timerInterval * Double(matrixSize) * Double(matrixSize) / 60)) 分くらいで落ちるはず")
+                .font(.title)
+
+            Text("砂の数: \(matrixSize * matrixSize)")
+                .padding()
             Slider(value: Binding(
                 get: { Double(matrixSize) },
                 set: { newValue in
                     matrixSize = Int(newValue)
                     onMatrixSizeChange()
                 }
-            ), in: 5...30, step: 1)
+            ), in: 5...25, step: 1)
             .padding()
-            Text("Matrix Size: \(matrixSize)")
+
+            Text("砂1粒の落ちる速さ： \(String(format: "%.1f", timerInterval))")
                 .padding()
+
+            Slider(value: $timerInterval, in: 0.01...1.0, step: 0.01) {
+                Text("Timer Interval: \(String(format: "%.1f", timerInterval)) seconds")
+            }
+            .padding()
+            .onChange(of: timerInterval) { _ in
+                onTimerIntervalChange()
+            }
         }
         .navigationTitle("Settings")
     }
 }
-
 
 func createZeroMatrix(size: Int, fillInt: Int = 0) -> [[Int]] {
     return Array(repeating: Array(repeating: fillInt, count: size), count: size)
@@ -226,28 +332,6 @@ func nextMatrix(matrix: [[Int]], nextMove: (Int, Int)) -> [[Int]] {
 
     // 下の行が空いていたら移動
     return nextMatrix
-}
-
-struct MatrixView: View {
-    let matrix: [[Int]]
-    let sandSize: CGFloat
-
-    var body: some View {
-        VStack(spacing: 0) {
-            ForEach(0..<matrix.count, id: \.self) { row in
-                HStack(spacing: 0) {
-                    ForEach(0..<matrix[row].count, id: \.self) { column in
-                        Text("")
-                            .frame(width: sandSize, height: sandSize)
-                            .border(matrix[row][column] != 0 ? Color.black : Color.clear, width: 1)
-                            .background(matrix[row][column] != 1 ? Color.clear : Color.yellow)
-                    }
-                }
-            }
-        }
-        .padding(0) // 余白を0に設定
-        .rotationEffect(.degrees(45))
-    }
 }
 
 #Preview {
