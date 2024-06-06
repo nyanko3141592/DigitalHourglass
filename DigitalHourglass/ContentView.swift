@@ -45,102 +45,67 @@ struct SandClockView: View {
     @State var isButtonDisabled = true
     @State var inclinationSensorIsActive = true
     @State private var motionManager = CMMotionManager()
+    @State private var matrixSize: Int = 15
+    @State private var showingSettings = false
 
     // 画面サイズ
     let screenSize = UIScreen.main.bounds.size
 
     var body: some View {
-        let matrixSize: CGFloat = {
-            let width = screenSize.width / CGFloat(matrix.count / 2) / 1.5
-            let height = screenSize.height / CGFloat(matrix.count) / 1.5
-            return width > height ? width : height
-        }()
-        ZStack{
-            VStack {
-                Spacer()
-                MatrixView(matrix:matrix, sandSize: matrixSize)
-                Spacer()
-            }
-            Button(action: {
-                isButtonDisabled.toggle()
-            }) {
-                // rectange
-                Rectangle()
-                    .frame(width: screenSize.width, height: screenSize.height)
-                    .foregroundColor(.clear)
-            }
-            if isButtonDisabled{
+        VStack {
+            let sandSize: CGFloat = {
+                let width = screenSize.width / CGFloat(matrix.count / 2) / 1.5
+                let height = screenSize.height / CGFloat(matrix.count) / 1.5
+                return width > height ? width : height
+            }()
 
-            }else{
-                // ここでmatrixのサイズ変更をできるようにする
-            }
-        }
-        .onDisappear {
-            stopTimer()
-            motionManager.stopDeviceMotionUpdates()
-        }
-        .onAppear() {
-            startTimer()
-            startMonitoringDeviceMotion()
-        }
-    }
-
-    func startTimer() {
-        stopTimer() // Stop any existing timer
-        timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { _ in
-            matrix = nextMatrix(matrix: matrix, nextMove: direction.move)
-        }
-    }
-
-    func stopTimer() {
-        timer?.invalidate()
-        timer = nil
-    }
-
-    func startMonitoringDeviceMotion() {
-        if motionManager.isDeviceMotionAvailable {
-            motionManager.deviceMotionUpdateInterval = 0.1
-            motionManager.startDeviceMotionUpdates(to: .main) { (motion, error) in
-                guard let motion = motion else { return }
-
-                if inclinationSensorIsActive {
-                    let pitch = motion.attitude.pitch
-                    let roll = motion.attitude.roll
-
-                    // Threshold values for detecting direction
-                    let threshold: Double = 0.2
-                    let stopThreshold: Double = 0.1
-
-                    if abs(pitch) < stopThreshold && abs(roll) < stopThreshold {
-                        direction = .stop
-                    } else if pitch > threshold && roll > threshold {
-                        direction = .downRight
-                    } else if pitch > threshold && roll < -threshold {
-                        direction = .downLeft
-                    } else if pitch < -threshold && roll > threshold {
-                        direction = .upRight
-                    } else if pitch < -threshold && roll < -threshold {
-                        direction = .upLeft
-                    } else if abs(pitch) > abs(roll) {
-                        if pitch > threshold {
-                            direction = .down
-                        } else if pitch < -threshold {
-                            direction = .up
-                        }
-                    } else {
-                        if roll > threshold {
-                            direction = .right
-                        } else if roll < -threshold {
-                            direction = .left
-                        }
-                    }
+            ZStack {
+                VStack {
+                    Spacer()
+                    MatrixView(matrix: matrix, sandSize: sandSize)
+                    Spacer()
+                }
+                Button(action: {
+                    showingSettings.toggle()
+                }) {
+                    Rectangle()
+                        .frame(width: screenSize.width, height: screenSize.height)
+                        .foregroundColor(.clear)
+                }
+                .sheet(isPresented: $showingSettings) {
+                    SettingsView(matrixSize: $matrixSize, onMatrixSizeChange: updateMatrix)
                 }
             }
         }
     }
+
+    private func updateMatrix() {
+        matrix = combineMatrices(createZeroMatrix(size: matrixSize, fillInt: 1), createZeroMatrix(size: matrixSize, fillInt: 2))
+    }
 }
 
-// 指定されたサイズの0で埋められた正方行列を生成する関数
+struct SettingsView: View {
+    @Binding var matrixSize: Int
+    let onMatrixSizeChange: () -> Void
+
+    var body: some View {
+        VStack {
+            Slider(value: Binding(
+                get: { Double(matrixSize) },
+                set: { newValue in
+                    matrixSize = Int(newValue)
+                    onMatrixSizeChange()
+                }
+            ), in: 5...30, step: 1)
+            .padding()
+            Text("Matrix Size: \(matrixSize)")
+                .padding()
+        }
+        .navigationTitle("Settings")
+    }
+}
+
+
 func createZeroMatrix(size: Int, fillInt: Int = 0) -> [[Int]] {
     return Array(repeating: Array(repeating: fillInt, count: size), count: size)
 }
