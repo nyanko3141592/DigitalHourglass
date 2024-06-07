@@ -82,7 +82,8 @@ struct MatrixUtils {
             })
 
             // 元の位置の隣接から真下に近いもの3つ
-            nextPosRow.append(contentsOf: adjacentPos[0...2])
+
+            nextPosRow.append(contentsOf: adjacentPos[0...2].shuffled())
 
             // 隣接から一つ下の水平面を取得
             for i in 0..<2 {
@@ -92,10 +93,12 @@ struct MatrixUtils {
                     }
                     let a = (nextPosRow[i].0 + verticalMove.0, nextPosRow[i].1 + verticalMove.1)
                     if a == nextPosRow[j]{
+                        var array: [(Int, Int)] = []
                         for k in 0...size{
-                            nextPosRow.append((a.0 + k * verticalMove.0, a.1 + k * verticalMove.1))
-                            nextPosRow.append((a.0 - k * verticalMove.0, a.1 - k * verticalMove.1))
+                            array.append((a.0 + k * verticalMove.0, a.1 + k * verticalMove.1))
+                            array.append((a.0 - k * verticalMove.0, a.1 - k * verticalMove.1))
                         }
+                        nextPosRow.append(contentsOf: array.shuffled())
                     }
                 }
             }
