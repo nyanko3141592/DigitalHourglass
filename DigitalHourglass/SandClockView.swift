@@ -156,8 +156,8 @@ struct SandClockView: View {
 
 struct DirectionCalculator {
     static func calculate(pitch: Double, roll: Double) -> Direction {
-        let threshold: Double = 0.2
-        let stopThreshold: Double = 0.1
+        let threshold: Double = 0.1
+        let stopThreshold: Double = 0.05
 
         if abs(pitch) < stopThreshold && abs(roll) < stopThreshold {
             return .stop
