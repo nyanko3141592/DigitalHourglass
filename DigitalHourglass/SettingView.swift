@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct SettingsView: View {
+    @EnvironmentObject var colorSettings: EnvironmentVariables
+    
     @Binding var timerDuration: Int
     let onMatrixSizeChange: () -> Void
     let onTimerDurationChange: () -> Void
@@ -74,6 +76,28 @@ struct SettingsView: View {
                 }
                 .padding()
             }
+            
+            ColorPicker("Background", selection: $colorSettings.backgroundColor)
+                            .padding()
+                            .background(Color.gray.opacity(0.2))
+                            .cornerRadius(10)
+            ColorPicker("Upper Glass", selection: $colorSettings.matrix1Color)
+                            .padding()
+                            .background(Color.gray.opacity(0.2))
+                            .cornerRadius(10)
+            ColorPicker("Lower Glass", selection: $colorSettings.matrix2Color)
+                            .padding()
+                            .background(Color.gray.opacity(0.2))
+                            .cornerRadius(10)
+            ColorPicker("Glass Glass", selection: $colorSettings.glassColor)
+                            .padding()
+                            .background(Color.gray.opacity(0.2))
+                            .cornerRadius(10)
+            // toggle button
+            Toggle(isOn: $colorSettings.isCircleSand) {
+                Text("Circle Sand")
+            }
+            .padding()
 
             Spacer()
         }

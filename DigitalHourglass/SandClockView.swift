@@ -51,6 +51,8 @@ struct SandClockView: View {
     @State private var showingSettings = false
     @State private var dropCount: Int = 0
     @State var timerDuration: Int = 100
+    
+    @StateObject var colorSettings = EnvironmentVariables()
     // 画面サイズ
     let screenSize = UIScreen.main.bounds.size
 
@@ -66,6 +68,7 @@ struct SandClockView: View {
                 VStack {
                     Spacer()
                     MatrixView(matrix: matrix, sandSize: sandSize)
+                        .environmentObject(colorSettings)
                     Spacer()
                 }
                 Button(action: {
@@ -77,10 +80,11 @@ struct SandClockView: View {
                 }
                 .sheet(isPresented: $showingSettings) {
                     SettingsView(timerDuration: $timerDuration, onMatrixSizeChange: updateMatrix, onTimerDurationChange: updateTimer)
+                        .environmentObject(colorSettings)
                 }
             }
         }
-        .background(.white)
+        .background(colorSettings.backgroundColor)
         .onDisappear {
             stopTimer()
             motionManager.stopDeviceMotionUpdates()
