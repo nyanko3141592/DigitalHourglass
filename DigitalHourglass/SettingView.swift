@@ -8,38 +8,26 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @Binding var matrixSize: Int
-    @Binding var timerInterval: Double
+    @Binding var timerDuration: Int
     let onMatrixSizeChange: () -> Void
-    let onTimerIntervalChange: () -> Void
+    let onTimerDurationChange: () -> Void
 
     var body: some View {
         VStack {
             // 新しいText要素を追加
-            Text("\(String(format: "%.1f", timerInterval * Double(matrixSize) * Double(matrixSize) / 60)) 分くらいで落ちるはず")
+            Text("\(String(timerDuration)) 秒計")
                 .font(.title)
 
-            Text("砂の数: \(matrixSize * matrixSize)")
-                .padding()
             Slider(value: Binding(
-                get: { Double(matrixSize) },
+                get: { Double(timerDuration) },
                 set: { newValue in
-                    matrixSize = Int(newValue)
-                    onMatrixSizeChange()
+                    timerDuration = Int(newValue)
+                    onTimerDurationChange()
                 }
-            ), in: 5...25, step: 1)
-            .padding()
-
-            Text("砂1粒の落ちる速さ： \(String(format: "%.1f", timerInterval))")
-                .padding()
-
-            Slider(value: $timerInterval, in: 0.01...1.0, step: 0.01) {
-                Text("Timer Interval: \(String(format: "%.1f", timerInterval)) seconds")
+            ), in: 10...500, step: 10) {
+                Text("Timer Interval: \(String(format: "%.f", timerDuration)) seconds")
             }
             .padding()
-            .onChange(of: timerInterval) { _ in
-                onTimerIntervalChange()
-            }
         }
         .navigationTitle("Settings")
     }
