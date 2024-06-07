@@ -45,10 +45,14 @@ struct MatrixUtils {
         if nextMove == (0,0){
             return matrix
         }
-
+        
         var correctPoss: [(Int, Int)] = []
-        for row in (0..<size).reversed() {
-            for col in (0..<size).reversed() {
+        var countArray = Array((0..<size))
+        if nextMove == Direction.down.move{
+            countArray = countArray.reversed()
+        }
+        for row in  countArray{
+            for col in countArray {
                 if matrix[row][col] == 1 {
                     correctPoss.append((row, col))
                 }
