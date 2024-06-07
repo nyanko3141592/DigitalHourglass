@@ -39,7 +39,7 @@ struct SandClockView: View {
     // 1 : あり
     // 2 : なし
     // 0 : 枠ナシ
-    @State var matrix: [[Int]] = combineMatrices(createZeroMatrix(size: 10, fillInt: 1), createZeroMatrix(size: 10, fillInt: 2))
+    @State var matrix: [[Int]] = MatrixUtils.combine(MatrixUtils.create(size: 10, fill: 1), MatrixUtils.create(size: 10, fill: 2))
     @State var timer: Timer?
     @State var direction: Direction = .down
     @State var isButtonDisabled = true
@@ -90,7 +90,7 @@ struct SandClockView: View {
 
     }
     private func updateMatrix() {
-        matrix = combineMatrices(createZeroMatrix(size: matrixSize, fillInt: 1), createZeroMatrix(size: matrixSize, fillInt: 2))
+        matrix = MatrixUtils.combine(MatrixUtils.create(size: matrixSize, fill: 1), MatrixUtils.create(size: matrixSize, fill: 2))
     }
 
     private func updateTimer() {
@@ -145,34 +145,35 @@ struct DirectionCalculator {
     }
 }
 
-func createZeroMatrix(size: Int, fillInt: Int = 0) -> [[Int]] {
-    return Array(repeating: Array(repeating: fillInt, count: size), count: size)
-}
-
-// 2つの2次元配列を指定の形で結合する関数
-func combineMatrices(_ matrix1: [[Int]], _ matrix2: [[Int]]) -> [[Int]] {
-    guard matrix1.count == matrix2.count, matrix1.first?.count == matrix2.first?.count else {
-        fatalError("Matrices must be of the same size")
+struct MatrixUtils {
+    static func create(size: Int, fill: Int) -> [[Int]] {
+        Array(repeating: Array(repeating: fill, count: size), count: size)
     }
 
-    let size = matrix1.count
-    var combinedMatrix = createZeroMatrix(size: size * 2)
-
-    // matrix1を左上に配置
-    for row in 0..<size {
-        for col in 0..<size {
-            combinedMatrix[row][col] = matrix1[row][col]
+    static func combine(_ matrix1: [[Int]], _ matrix2: [[Int]]) -> [[Int]] {
+        guard matrix1.count == matrix2.count, matrix1.first?.count == matrix2.first?.count else {
+            fatalError("Matrices must be of the same size")
         }
-    }
 
-    // matrix2を右下に配置
-    for row in 0..<size {
-        for col in 0..<size {
-            combinedMatrix[row + size][col + size] = matrix2[row][col]
+        let size = matrix1.count
+        var combinedMatrix = MatrixUtils.create(size: size * 2, fill: 0)
+
+        // matrix1を左上に配置
+        for row in 0..<size {
+            for col in 0..<size {
+                combinedMatrix[row][col] = matrix1[row][col]
+            }
         }
-    }
 
-    return combinedMatrix
+        // matrix2を右下に配置
+        for row in 0..<size {
+            for col in 0..<size {
+                combinedMatrix[row + size][col + size] = matrix2[row][col]
+            }
+        }
+
+        return combinedMatrix
+    }
 }
 
 func nextMatrix(matrix: [[Int]], nextMove: (Int, Int)) -> [[Int]] {
