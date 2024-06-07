@@ -51,15 +51,14 @@ struct SandClockView: View {
     @State private var showingSettings = false
     @State private var dropCount: Int = 0
     @State var timerDuration: Int = 100
-
     // 画面サイズ
     let screenSize = UIScreen.main.bounds.size
 
     var body: some View {
         VStack {
             let sandSize: CGFloat = {
-                let width = screenSize.width / CGFloat(matrix.count / 2) / 1.5
-                let height = screenSize.height / CGFloat(matrix.count) / 1.5
+                let width = screenSize.width / CGFloat(matrix.count / 2) / 1.6
+                let height = screenSize.height / CGFloat(matrix.count) / 1.6
                 return width > height ? width : height
             }()
 
@@ -79,9 +78,9 @@ struct SandClockView: View {
                 .sheet(isPresented: $showingSettings) {
                     SettingsView(timerDuration: $timerDuration, onMatrixSizeChange: updateMatrix, onTimerDurationChange: updateTimer)
                 }
-                Label("\(timerDuration) Digital Hourglass", systemImage: "hourglass")
             }
         }
+        .background(.white)
         .onDisappear {
             stopTimer()
             motionManager.stopDeviceMotionUpdates()

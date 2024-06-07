@@ -16,10 +16,26 @@ struct MatrixView: View {
             ForEach(0..<matrix.count, id: \.self) { row in
                 HStack(spacing: 0) {
                     ForEach(0..<matrix[row].count, id: \.self) { column in
+                        let cellColor: Color = {
+                            let cellValue = matrix[row][column]
+                            if cellValue == 2 {
+                                return Color.white
+                            }else if cellValue == 0 {
+                                return Color.clear
+                            } else if cellValue == 1{
+                                if row > matrix.count / 2 - 1 && column > matrix.count / 2 - 1{
+                                    return Color.green
+                                }else{
+                                    return Color.yellow
+                                }
+                            }
+                            return Color.clear
+                        }()
+
                         Text("")
                             .frame(width: sandSize, height: sandSize)
                             .border(matrix[row][column] != 0 ? Color.black : Color.clear, width: 1)
-                            .background(matrix[row][column] != 1 ? Color.clear : Color.yellow)
+                            .background(cellColor)
                     }
                 }
             }
@@ -28,4 +44,3 @@ struct MatrixView: View {
         .rotationEffect(.degrees(45))
     }
 }
-
