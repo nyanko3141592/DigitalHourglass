@@ -110,105 +110,38 @@ struct SandClockView: View {
         timer = nil
     }
 
-    func startMonitoringDeviceMotion() {
-        if motionManager.isDeviceMotionAvailable {
-            motionManager.deviceMotionUpdateInterval = 0.1
-            motionManager.startDeviceMotionUpdates(to: .main) { (motion, error) in
-                guard let motion = motion else { return }
+    private func startMonitoringDeviceMotion() {
+        guard motionManager.isDeviceMotionAvailable else { return }
 
-                if inclinationSensorIsActive {
-                    let pitch = motion.attitude.pitch
-                    let roll = motion.attitude.roll
-
-                    let threshold: Double = 0.2
-                    let stopThreshold: Double = 0.1
-
-                    if abs(pitch) < stopThreshold && abs(roll) < stopThreshold {
-                        direction = .stop
-                    } else if pitch > threshold && roll > threshold {
-                        direction = .downRight
-                    } else if pitch > threshold && roll < -threshold {
-                        direction = .downLeft
-                    } else if pitch < -threshold && roll > threshold {
-                        direction = .upRight
-                    } else if pitch < -threshold && roll < -threshold {
-                        direction = .upLeft
-                    } else if abs(pitch) > abs(roll) {
-                        if pitch > threshold {
-                            direction = .down
-                        } else if pitch < -threshold {
-                            direction = .up
-                        }
-                    } else {
-                        if roll > threshold {
-                            direction = .right
-                        } else if roll < -threshold {
-                            direction = .left
-                        }
-                    }
-                }
-            }
+        motionManager.deviceMotionUpdateInterval = 0.1
+        motionManager.startDeviceMotionUpdates(to: .main) { (motion, _) in
+            guard let motion = motion, inclinationSensorIsActive else { return }
+            direction = DirectionCalculator.calculate(pitch: motion.attitude.pitch, roll: motion.attitude.roll)
         }
     }
 
 }
 
-struct MatrixView: View {
-    let matrix: [[Int]]
-    let sandSize: CGFloat
+struct DirectionCalculator {
+    static func calculate(pitch: Double, roll: Double) -> Direction {
+        let threshold: Double = 0.2
+        let stopThreshold: Double = 0.1
 
-    var body: some View {
-        VStack(spacing: 0) {
-            ForEach(0..<matrix.count, id: \.self) { row in
-                HStack(spacing: 0) {
-                    ForEach(0..<matrix[row].count, id: \.self) { column in
-                        Text("")
-                            .frame(width: sandSize, height: sandSize)
-                            .border(matrix[row][column] != 0 ? Color.black : Color.clear, width: 1)
-                            .background(matrix[row][column] != 1 ? Color.clear : Color.yellow)
-                    }
-                }
-            }
+        if abs(pitch) < stopThreshold && abs(roll) < stopThreshold {
+            return .stop
+        } else if pitch > threshold && roll > threshold {
+            return .downRight
+        } else if pitch > threshold && roll < -threshold {
+            return .downLeft
+        } else if pitch < -threshold && roll > threshold {
+            return .upRight
+        } else if pitch < -threshold && roll < -threshold {
+            return .upLeft
+        } else if abs(pitch) > abs(roll) {
+            return pitch > threshold ? .down : .up
+        } else {
+            return roll > threshold ? .right : .left
         }
-        .padding(0) // 余白を0に設定
-        .rotationEffect(.degrees(45))
-    }
-}
-struct SettingsView: View {
-    @Binding var matrixSize: Int
-    @Binding var timerInterval: Double
-    let onMatrixSizeChange: () -> Void
-    let onTimerIntervalChange: () -> Void
-
-    var body: some View {
-        VStack {
-            // 新しいText要素を追加
-            Text("\(String(format: "%.1f", timerInterval * Double(matrixSize) * Double(matrixSize) / 60)) 分くらいで落ちるはず")
-                .font(.title)
-
-            Text("砂の数: \(matrixSize * matrixSize)")
-                .padding()
-            Slider(value: Binding(
-                get: { Double(matrixSize) },
-                set: { newValue in
-                    matrixSize = Int(newValue)
-                    onMatrixSizeChange()
-                }
-            ), in: 5...25, step: 1)
-            .padding()
-
-            Text("砂1粒の落ちる速さ： \(String(format: "%.1f", timerInterval))")
-                .padding()
-
-            Slider(value: $timerInterval, in: 0.01...1.0, step: 0.01) {
-                Text("Timer Interval: \(String(format: "%.1f", timerInterval)) seconds")
-            }
-            .padding()
-            .onChange(of: timerInterval) { _ in
-                onTimerIntervalChange()
-            }
-        }
-        .navigationTitle("Settings")
     }
 }
 
