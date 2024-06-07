@@ -42,6 +42,7 @@ struct MatrixView: View {
                                 Rectangle()
                                     .frame(width: sandSize, height: sandSize)
                                     .foregroundColor(colorSettings.glassColor)
+                                    .overlay(Rectangle().strokeBorder(Color.black, lineWidth: colorSettings.frameExist ? 1 : 0))
                                 if matrix[row][column] == 1 {
                                     if colorSettings.isCircleSand {
                                         Circle()

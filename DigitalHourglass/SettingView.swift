@@ -98,6 +98,11 @@ struct SettingsView: View {
                 Text("Circle Sand")
             }
             .padding()
+            // toggle button
+            Toggle(isOn: $colorSettings.frameExist) {
+                Text("Cell Frame")
+            }
+            .padding()
 
             Spacer()
         }

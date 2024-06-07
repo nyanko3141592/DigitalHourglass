@@ -12,7 +12,8 @@ class EnvironmentVariables: ObservableObject {
     @Published var matrix1Color: Color = .yellow
     @Published var matrix2Color: Color = .green
     @Published var backgroundColor: Color = .white
-    @Published var glassColor: Color = .black
+    @Published var glassColor: Color = .gray
     // Shape
     @Published var isCircleSand: Bool = false
+    @Published var frameExist: Bool = true
 }
