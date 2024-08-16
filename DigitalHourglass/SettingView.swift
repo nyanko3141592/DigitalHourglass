@@ -16,7 +16,7 @@ struct SettingsView: View {
     let buttonSize: CGFloat = 100
 
     var body: some View {
-        VStack {
+        ScrollView{
             Text("\(String(timerDuration)) 秒計")
                 .font(.title)
                 .padding()
