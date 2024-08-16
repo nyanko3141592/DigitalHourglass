@@ -9,7 +9,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @EnvironmentObject var colorSettings: EnvironmentVariables
-    
+
     @Binding var timerDuration: Int
     let onMatrixSizeChange: () -> Void
     let onTimerDurationChange: () -> Void
@@ -76,28 +76,43 @@ struct SettingsView: View {
                 }
                 .padding()
             }
-            
+
             ColorPicker("Background", selection: $colorSettings.backgroundColor)
-                            .padding()
-                            .background(Color.gray.opacity(0.2))
-                            .cornerRadius(10)
+                .padding()
+                .background(Color.gray.opacity(0.2))
+                .cornerRadius(10)
             ColorPicker("Upper Glass", selection: $colorSettings.matrix1Color)
-                            .padding()
-                            .background(Color.gray.opacity(0.2))
-                            .cornerRadius(10)
+                .padding()
+                .background(Color.gray.opacity(0.2))
+                .cornerRadius(10)
             ColorPicker("Lower Glass", selection: $colorSettings.matrix2Color)
-                            .padding()
-                            .background(Color.gray.opacity(0.2))
-                            .cornerRadius(10)
+                .padding()
+                .background(Color.gray.opacity(0.2))
+                .cornerRadius(10)
             ColorPicker("Glass Glass", selection: $colorSettings.glassColor)
-                            .padding()
-                            .background(Color.gray.opacity(0.2))
-                            .cornerRadius(10)
+                .padding()
+                .background(Color.gray.opacity(0.2))
+                .cornerRadius(10)
+
+            // 色の初期化ボタンの追加
+            Button(action: {
+                resetColors()
+            }) {
+                Text("Reset Colors")
+                    .font(.system(size: 20))
+                    .padding()
+                    .background(Color.red.opacity(0.7))
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+            }
+            .padding()
+
             // toggle button
             Toggle(isOn: $colorSettings.isCircleSand) {
                 Text("Circle Sand")
             }
             .padding()
+
             // toggle button
             Toggle(isOn: $colorSettings.frameExist) {
                 Text("Cell Frame")
@@ -108,4 +123,13 @@ struct SettingsView: View {
         }
         .navigationTitle("Settings")
     }
+
+    // 色を初期状態に戻すメソッド
+    private func resetColors() {
+        colorSettings.matrix1Color = .yellow
+        colorSettings.matrix2Color = .green
+        colorSettings.backgroundColor = .white
+        colorSettings.glassColor = .gray
+    }
 }
+
