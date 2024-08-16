@@ -11,6 +11,29 @@ import CoreMotion
 enum Direction {
     case upLeft, up, upRight, left, right, downLeft, down, downRight, stop
 
+    var directionDegree: Int{
+        switch self {
+        case .upLeft:
+           return -135
+        case .up:
+           return -90
+        case .upRight:
+           return -45
+        case .left:
+           return -180
+        case .right:
+           return 0
+        case .downLeft:
+           return 135
+        case .down:
+           return 90
+        case .downRight:
+           return 45
+        case .stop:
+           return 0
+        }
+    }
+
     var move: (Int, Int) {
         switch self {
         case .upLeft:
@@ -83,20 +106,13 @@ struct SandClockView: View {
                         Button(action: {
                             trueGravity.toggle()
                         }) {
-                            // reverse icon
-                            if trueGravity {
-                                Image(systemName: "arrow.counterclockwise")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 40, height: 40)
-                                    .foregroundColor(.accentColor)
-                            } else {
-                                Image(systemName: "arrow.clockwise")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 40, height: 40)
-                                    .foregroundColor(.accentColor)
-                            }
+                            Image(systemName: "arrow.right.circle" + (trueGravity ? "" : ".fill"))
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 40, height: 40)
+                                .foregroundColor(.accentColor)
+                                .rotationEffect(.degrees(Double(direction.directionDegree)))
+
                         }
                         Spacer()
                             .frame(width: screenSize.width - 100)
