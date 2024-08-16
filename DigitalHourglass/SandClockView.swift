@@ -51,18 +51,24 @@ struct SandClockView: View {
     @State private var showingSettings = false
     @State private var dropCount: Int = 0
     @State var timerDuration: Int = 100
-    
+    @State var trueGravity = true
+
     @StateObject var colorSettings = EnvironmentVariables()
     // 画面サイズ
     let screenSize = UIScreen.main.bounds.size
+    let adBannerHeight: CGFloat = 50
 
     var body: some View {
         VStack {
             let sandSize: CGFloat = {
                 let width = screenSize.width / CGFloat(matrix.count / 2) / 1.6
-                let height = screenSize.height / CGFloat(matrix.count) / 1.6
+                let height = (screenSize.height - adBannerHeight) / CGFloat(matrix.count) / 1.6
                 return width > height ? width : height
             }()
+
+            Rectangle()
+                .frame(width: screenSize.width, height: adBannerHeight)
+                .foregroundColor(.red)
 
             ZStack {
                 VStack {
@@ -71,17 +77,49 @@ struct SandClockView: View {
                         .environmentObject(colorSettings)
                     Spacer()
                 }
-                Button(action: {
-                    showingSettings.toggle()
-                }) {
-                    Rectangle()
-                        .frame(width: screenSize.width, height: screenSize.height)
-                        .foregroundColor(.clear)
+                VStack{
+                    HStack{
+                        // reverse button
+                        Button(action: {
+                            trueGravity.toggle()
+                        }) {
+                            // reverse icon
+                            if trueGravity {
+                                Image(systemName: "arrow.counterclockwise")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 40, height: 40)
+                                    .foregroundColor(.accentColor)
+                            } else {
+                                Image(systemName: "arrow.clockwise")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 40, height: 40)
+                                    .foregroundColor(.accentColor)
+                            }
+                        }
+                        Spacer()
+                            .frame(width: screenSize.width - 100)
+                       // setting button
+                        Button(action: {
+                            showingSettings.toggle()
+                        }) {
+                            // setting icon
+                            Image(systemName: "gearshape.circle.fill")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 40, height: 40)
+                                .foregroundColor(.accentColor)
+                        }
+                        .sheet(isPresented: $showingSettings) {
+                            SettingsView(timerDuration: $timerDuration, onMatrixSizeChange: updateMatrix, onTimerDurationChange: updateTimer)
+                                .environmentObject(colorSettings)
+                        }
+                    }
+                    .padding()
+                    Spacer()
                 }
-                .sheet(isPresented: $showingSettings) {
-                    SettingsView(timerDuration: $timerDuration, onMatrixSizeChange: updateMatrix, onTimerDurationChange: updateTimer)
-                        .environmentObject(colorSettings)
-                }
+                .padding()
             }
         }
         .background(colorSettings.backgroundColor)
@@ -148,31 +186,31 @@ struct SandClockView: View {
         motionManager.deviceMotionUpdateInterval = 0.1
         motionManager.startDeviceMotionUpdates(to: .main) { (motion, _) in
             guard let motion = motion, inclinationSensorIsActive else { return }
-            direction = DirectionCalculator.calculate(pitch: motion.attitude.pitch, roll: motion.attitude.roll)
+            direction = DirectionCalculator.calculate(pitch: motion.attitude.pitch, roll: motion.attitude.roll, currentGravity: trueGravity)
         }
     }
 
 }
 
 struct DirectionCalculator {
-    static func calculate(pitch: Double, roll: Double) -> Direction {
+    static func calculate(pitch: Double, roll: Double, currentGravity: Bool) -> Direction {
         let threshold: Double = 0.1
-        let stopThreshold: Double = 0.05
+        let stopThreshold: Double = 0.1
 
         if abs(pitch) < stopThreshold && abs(roll) < stopThreshold {
             return .stop
         } else if pitch > threshold && roll > threshold {
-            return .downRight
+            return currentGravity ? .downRight : .upLeft
         } else if pitch > threshold && roll < -threshold {
-            return .downLeft
+            return currentGravity ? .downLeft : .upRight
         } else if pitch < -threshold && roll > threshold {
-            return .upRight
+            return currentGravity ? .upRight : .downLeft
         } else if pitch < -threshold && roll < -threshold {
-            return .upLeft
+            return currentGravity ? .upLeft : .downRight
         } else if abs(pitch) > abs(roll) {
-            return pitch > threshold ? .down : .up
+            return pitch > threshold ? (currentGravity ? .down : .up) : (currentGravity ? .up : .down)
         } else {
-            return roll > threshold ? .right : .left
+            return roll > threshold ? (currentGravity ? .right : .left) : (currentGravity ? .left : .right)
         }
     }
 }
