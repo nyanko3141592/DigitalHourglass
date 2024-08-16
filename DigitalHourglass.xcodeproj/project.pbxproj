@@ -13,6 +13,8 @@
 		E96548F42C1055F9001DBD24 /* SandClockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E96548F32C1055F9001DBD24 /* SandClockView.swift */; };
 		E96548F62C1055FA001DBD24 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E96548F52C1055FA001DBD24 /* Assets.xcassets */; };
 		E96548F92C1055FA001DBD24 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E96548F82C1055FA001DBD24 /* Preview Assets.xcassets */; };
+		E98750442C13445C00BBC57F /* MatrixUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = E98750432C13445C00BBC57F /* MatrixUtils.swift */; };
+		E98750462C1364E000BBC57F /* EnvironmentVariables.swift in Sources */ = {isa = PBXBuildFile; fileRef = E98750452C1364E000BBC57F /* EnvironmentVariables.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -23,6 +25,8 @@
 		E96548F32C1055F9001DBD24 /* SandClockView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SandClockView.swift; sourceTree = "<group>"; };
 		E96548F52C1055FA001DBD24 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		E96548F82C1055FA001DBD24 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		E98750432C13445C00BBC57F /* MatrixUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatrixUtils.swift; sourceTree = "<group>"; };
+		E98750452C1364E000BBC57F /* EnvironmentVariables.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnvironmentVariables.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -55,10 +59,12 @@
 		E96548F02C1055F9001DBD24 /* DigitalHourglass */ = {
 			isa = PBXGroup;
 			children = (
+				E98750432C13445C00BBC57F /* MatrixUtils.swift */,
 				E93E4B8C2C12974500099A50 /* MatrixView.swift */,
 				E93E4B8A2C12971B00099A50 /* SettingView.swift */,
 				E96548F12C1055F9001DBD24 /* DigitalHourglassApp.swift */,
 				E96548F32C1055F9001DBD24 /* SandClockView.swift */,
+				E98750452C1364E000BBC57F /* EnvironmentVariables.swift */,
 				E96548F52C1055FA001DBD24 /* Assets.xcassets */,
 				E96548F72C1055FA001DBD24 /* Preview Content */,
 			);
@@ -143,9 +149,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E98750442C13445C00BBC57F /* MatrixUtils.swift in Sources */,
 				E93E4B8B2C12971B00099A50 /* SettingView.swift in Sources */,
 				E96548F42C1055F9001DBD24 /* SandClockView.swift in Sources */,
 				E96548F22C1055F9001DBD24 /* DigitalHourglassApp.swift in Sources */,
+				E98750462C1364E000BBC57F /* EnvironmentVariables.swift in Sources */,
 				E93E4B8D2C12974500099A50 /* MatrixView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
